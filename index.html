@@ -634,6 +634,51 @@
   .screenshot-btn:hover { background: var(--teal); color: #fff; }
 
   .divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+
+  /* BLOG SECTION */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .blog-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-decoration: none;
+    display: block;
+    transition: all 0.2s;
+  }
+  .blog-card:hover {
+    border-color: var(--teal);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(31,168,160,0.12);
+  }
+  .blog-card-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 0.6rem;
+  }
+  .blog-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--navy);
+    line-height: 1.3;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+  .blog-card p {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  .blog-card-link { font-size: 0.82rem; font-weight: 600; color: var(--teal); }
 </style>
 </head>
 <body>
@@ -866,6 +911,27 @@
     <p style="color:var(--text-soft);line-height:1.75;font-size:0.94rem;max-width:620px;margin-top:1rem;">
       The lifetime totals are projections based on your <em>current</em> daily habits remaining constant. Life changes — use the "What If?" tab to explore how small adjustments compound over years.
     </p>
+  </section>
+
+  <div class="divider"></div>
+  <section>
+    <p class="section-label">From the Blog</p>
+    <h2 class="section-title">Go deeper</h2>
+    <p class="section-sub">Explore the research and thinking behind how we spend our time.</p>
+    <div class="blog-grid">
+      <a class="blog-card" href="/blog/how-to-do-a-personal-time-audit">
+        <div class="blog-card-tag">Time Management · 6 min read</div>
+        <h3>How to Do a Personal Time Audit (And Why It Might Surprise You)</h3>
+        <p>Most of us have a rough idea of how we spend our days. A time audit shows you the reality — and the gap is almost always eye-opening.</p>
+        <span class="blog-card-link">Read the guide →</span>
+      </a>
+      <a class="blog-card" href="/blog/how-much-of-your-life-do-you-spend-sleeping">
+        <div class="blog-card-tag">Sleep · 5 min read</div>
+        <h3>How Much of Your Life Do You Spend Sleeping? The Real Numbers</h3>
+        <p>The average person will spend around 26 years of their life asleep. Here's what that number really means — and why it's not something to feel bad about.</p>
+        <span class="blog-card-link">Read the article →</span>
+      </a>
+    </div>
   </section>
 </main>
 
