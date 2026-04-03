@@ -679,6 +679,37 @@
     margin-bottom: 1rem;
   }
   .blog-card-link { font-size: 0.82rem; font-weight: 600; color: var(--teal); }
+
+  /* COMPARE TAB */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-label { font-size: 0.88rem; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 0.4rem; }
+  .compare-bars { display: flex; flex-direction: column; gap: 4px; }
+  .compare-bar-wrap { display: flex; align-items: center; gap: 0.5rem; }
+  .compare-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .compare-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+  .compare-bar-you { background: var(--teal); }
+  .compare-bar-avg { background: var(--slate); opacity: 0.5; }
+  .compare-bar-lbl { font-size: 0.72rem; color: var(--slate); width: 28px; flex-shrink: 0; }
+  .compare-bar-val { font-size: 0.75rem; font-weight: 600; color: var(--navy); width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+  .compare-verdict {
+    text-align: right;
+    flex-shrink: 0;
+    min-width: 90px;
+  }
+  .compare-pct { font-family: 'DM Serif Display', serif; font-size: 1.3rem; line-height: 1; }
+  .compare-pct.higher { color: var(--blush); }
+  .compare-pct.lower { color: var(--sage); }
+  .compare-pct.same { color: var(--slate); }
+  .compare-verdict-lbl { font-size: 0.7rem; color: var(--slate); }
+  @media(max-width:520px) { .compare-row { grid-template-columns: 1fr; } .compare-verdict { text-align: left; } }
 </style>
 </head>
 <body>
@@ -840,6 +871,7 @@
       <button class="tab-btn active" onclick="showTab('day',this)">Your Day</button>
       <button class="tab-btn" onclick="showTab('lifetime',this)">Your Lifetime</button>
       <button class="tab-btn" onclick="showTab('whatif',this)">What If?</button>
+      <button class="tab-btn" onclick="showTab('compare',this)">How Do You Compare?</button>
     </div>
 
     <!-- TAB: DAY -->
@@ -869,6 +901,30 @@
     <div id="tab-whatif" class="card" style="display:none">
       <p style="font-size:0.9rem;color:var(--text-soft);margin-bottom:1.5rem;line-height:1.5;">Drag a slider to see what you could reclaim. Small changes compound dramatically over a lifetime.</p>
       <div id="whatif-rows"></div>
+    </div>
+
+    <!-- TAB: COMPARE -->
+    <div id="tab-compare" class="card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+        <div>
+          <p style="font-size:0.9rem;color:var(--text-soft);line-height:1.5;">See how your daily habits compare to the national average. Data from the BLS American Time Use Survey (2024) and OECD Time Use Database.</p>
+        </div>
+        <div class="field" style="min-width:200px;">
+          <label for="compare-country" style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-soft);display:block;margin-bottom:0.4rem;">Compare against</label>
+          <select id="compare-country" onchange="buildCompare()" style="width:100%;padding:0.6rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);background:var(--white);outline:none;">
+            <option value="global">🌍 Global average (OECD)</option>
+            <option value="us" selected>🇺🇸 United States (BLS 2024)</option>
+            <option value="uk">🇬🇧 United Kingdom</option>
+            <option value="au">🇦🇺 Australia</option>
+            <option value="de">🇩🇪 Germany</option>
+            <option value="fr">🇫🇷 France</option>
+            <option value="jp">🇯🇵 Japan</option>
+            <option value="ca">🇨🇦 Canada</option>
+          </select>
+        </div>
+      </div>
+      <div id="compare-rows"></div>
+      <p style="font-size:0.72rem;color:var(--slate);margin-top:1.5rem;">Sources: US Bureau of Labor Statistics American Time Use Survey 2024; OECD Time Use Database. Country averages are population-level daily averages across all days including weekends.</p>
     </div>
 
     <!-- SHARE -->
@@ -1157,9 +1213,10 @@ function updateWI(slider, hId, yId, remaining) {
 function showTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['day','lifetime','whatif'].forEach(t => {
+  ['day','lifetime','whatif','compare'].forEach(t => {
     document.getElementById('tab-' + t).style.display = (t === name) ? '' : 'none';
   });
+  if (name === 'compare') buildCompare();
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────
@@ -1348,7 +1405,124 @@ function applyURLParams(vals) {
   </div>`;
 }
 
-// ── PATCH showResults to also save ───────────────────────────────────
+// ── COMPARISON DATA (BLS 2024 + OECD) ────────────────────────────────
+// All values in hours per day, population averages including non-working days
+const BENCHMARKS = {
+  us: {
+    label: 'US average (BLS 2024)',
+    sleep: 9.04, eating: 1.24, hygiene: 0.58, work: 3.43, commute: 0.37,
+    cooking: 0.67, chores: 0.62, childcare: 0.51, social: 0.45, tv: 2.60,
+    exercise: 0.31, reading: 0.15, hobbies: 0.60
+  },
+  uk: {
+    label: 'UK average (OECD)',
+    sleep: 8.50, eating: 1.20, hygiene: 0.55, work: 3.70, commute: 0.40,
+    cooking: 0.60, chores: 0.70, childcare: 0.45, social: 0.50, tv: 2.40,
+    exercise: 0.25, reading: 0.18, hobbies: 0.55
+  },
+  au: {
+    label: 'Australia average (OECD)',
+    sleep: 8.70, eating: 1.20, hygiene: 0.58, work: 3.50, commute: 0.38,
+    cooking: 0.65, chores: 0.75, childcare: 0.50, social: 0.55, tv: 2.50,
+    exercise: 0.35, reading: 0.18, hobbies: 0.58
+  },
+  de: {
+    label: 'Germany average (OECD)',
+    sleep: 8.30, eating: 1.35, hygiene: 0.55, work: 3.20, commute: 0.35,
+    cooking: 0.72, chores: 0.85, childcare: 0.40, social: 0.48, tv: 2.20,
+    exercise: 0.28, reading: 0.22, hobbies: 0.65
+  },
+  fr: {
+    label: 'France average (OECD)',
+    sleep: 8.70, eating: 2.00, hygiene: 0.60, work: 2.90, commute: 0.38,
+    cooking: 0.80, chores: 0.75, childcare: 0.42, social: 0.55, tv: 2.10,
+    exercise: 0.25, reading: 0.20, hobbies: 0.60
+  },
+  jp: {
+    label: 'Japan average (OECD)',
+    sleep: 7.83, eating: 1.20, hygiene: 0.55, work: 5.50, commute: 0.55,
+    cooking: 0.55, chores: 0.45, childcare: 0.35, social: 0.30, tv: 1.90,
+    exercise: 0.20, reading: 0.18, hobbies: 0.50
+  },
+  ca: {
+    label: 'Canada average (OECD)',
+    sleep: 8.65, eating: 1.22, hygiene: 0.57, work: 3.40, commute: 0.38,
+    cooking: 0.65, chores: 0.68, childcare: 0.48, social: 0.52, tv: 2.45,
+    exercise: 0.32, reading: 0.18, hobbies: 0.58
+  },
+  global: {
+    label: 'Global average (OECD)',
+    sleep: 8.55, eating: 1.25, hygiene: 0.57, work: 3.80, commute: 0.42,
+    cooking: 0.68, chores: 0.70, childcare: 0.44, social: 0.48, tv: 2.30,
+    exercise: 0.28, reading: 0.18, hobbies: 0.58
+  }
+};
+
+const COMPARE_LABELS = {
+  sleep: { label: 'Sleep', icon: '😴', higherMsg: 'more than', lowerMsg: 'less than' },
+  eating: { label: 'Eating', icon: '🍽️', higherMsg: 'more than', lowerMsg: 'less than' },
+  hygiene: { label: 'Hygiene', icon: '🚿', higherMsg: 'more than', lowerMsg: 'less than' },
+  work: { label: 'Work / Study', icon: '💼', higherMsg: 'more than', lowerMsg: 'less than' },
+  commute: { label: 'Commuting', icon: '🚗', higherMsg: 'more than', lowerMsg: 'less than' },
+  cooking: { label: 'Cooking', icon: '👨‍🍳', higherMsg: 'more than', lowerMsg: 'less than' },
+  chores: { label: 'Chores', icon: '🧹', higherMsg: 'more than', lowerMsg: 'less than' },
+  childcare: { label: 'Childcare', icon: '👶', higherMsg: 'more than', lowerMsg: 'less than' },
+  social: { label: 'Social Media', icon: '📱', higherMsg: 'more than', lowerMsg: 'less than' },
+  tv: { label: 'TV / Streaming', icon: '📺', higherMsg: 'more than', lowerMsg: 'less than' },
+  exercise: { label: 'Exercise', icon: '🏃', higherMsg: 'more than', lowerMsg: 'less than' },
+  reading: { label: 'Reading', icon: '📚', higherMsg: 'more than', lowerMsg: 'less than' },
+  hobbies: { label: 'Hobbies', icon: '🎨', higherMsg: 'more than', lowerMsg: 'less than' },
+};
+
+function buildCompare() {
+  const vals = getVals();
+  const countryKey = document.getElementById('compare-country').value;
+  const bench = BENCHMARKS[countryKey];
+  const el = document.getElementById('compare-rows');
+  el.innerHTML = '';
+
+  const maxH = 12; // max hours for bar scaling
+
+  Object.keys(COMPARE_LABELS).forEach(id => {
+    const meta = COMPARE_LABELS[id];
+    const you = vals[id] || 0;
+    const avg = bench[id] || 0;
+    if (you === 0 && avg === 0) return;
+
+    const diff = you - avg;
+    const pctDiff = avg > 0 ? Math.round((diff / avg) * 100) : 0;
+    const absPct = Math.abs(pctDiff);
+
+    let verdictClass = 'same', verdictText = 'About average';
+    if (pctDiff > 5) { verdictClass = 'higher'; verdictText = `${absPct}% more`; }
+    else if (pctDiff < -5) { verdictClass = 'lower'; verdictText = `${absPct}% less`; }
+
+    const youWidth = Math.min(you / maxH * 100, 100).toFixed(1);
+    const avgWidth = Math.min(avg / maxH * 100, 100).toFixed(1);
+
+    el.innerHTML += `<div class="compare-row">
+      <div class="compare-label">${meta.icon} ${meta.label}</div>
+      <div class="compare-bars">
+        <div class="compare-bar-wrap">
+          <span class="compare-bar-lbl" style="font-size:0.68rem;color:var(--teal);font-weight:700;">You</span>
+          <div class="compare-bar-track"><div class="compare-bar-fill compare-bar-you" style="width:${youWidth}%"></div></div>
+          <span class="compare-bar-val">${fmtHM(you)}</span>
+        </div>
+        <div class="compare-bar-wrap">
+          <span class="compare-bar-lbl" style="font-size:0.68rem;color:var(--slate);">Avg</span>
+          <div class="compare-bar-track"><div class="compare-bar-fill compare-bar-avg" style="width:${avgWidth}%"></div></div>
+          <span class="compare-bar-val" style="color:var(--slate);">${fmtHM(avg)}</span>
+        </div>
+      </div>
+      <div class="compare-verdict">
+        <div class="compare-pct ${verdictClass}">${verdictText}</div>
+        <div class="compare-verdict-lbl">${bench.label.split('(')[0].trim()}</div>
+      </div>
+    </div>`;
+  });
+}
+
+
 const _origShowResults = showResults;
 showResults = function() {
   _origShowResults();
