@@ -804,7 +804,7 @@
         <div class="slider-val" id="v-sleep">8h 0m</div>
       </div>
       <div class="slider-row">
-        <div class="slider-label"><span class="dot" style="background:#74a0f5"></span>Eating & Drinking</div>
+        <div class="slider-label"><span class="dot" style="background:#74a0f5"></span>Eating &amp; Drinking</div>
         <input type="range" id="eating" min="0" max="5" step="0.25" value="1" oninput="update()">
         <div class="slider-val" id="v-eating">1h 0m</div>
       </div>
@@ -1310,7 +1310,6 @@ function buildShareCard() {
     .slice(0, 3);
 
   const statsEl = document.getElementById('sc-stats');
-  // Insert biggest first
   const allTop = [{ c: bigCat, h: bigH }, ...sorted];
   statsEl.innerHTML = allTop.map(({ c, h }) => `
     <div class="sc-stat">
@@ -1372,7 +1371,6 @@ function applyVals(vals) {
   if (vals.age) document.getElementById('age').value = vals.age;
   if (vals.expectancy) {
     const sel = document.getElementById('country');
-    // Find the closest option value
     let best = null, bestDiff = Infinity;
     Array.from(sel.options).forEach(opt => {
       const diff = Math.abs(parseFloat(opt.value) - vals.expectancy);
@@ -1414,7 +1412,7 @@ function dismissBanner() {
 // ── URL STATE READING ─────────────────────────────────────────────────
 function readURLParams() {
   const params = new URLSearchParams(location.search);
-  if (!params.has('age') && !params.has('sleep')) return false; // nothing to load
+  if (!params.has('age') && !params.has('sleep')) return false;
 
   const vals = {};
   vals.age = parseFloat(params.get('age')) || null;
@@ -1427,7 +1425,6 @@ function readURLParams() {
 }
 
 function applyURLParams(vals) {
-  // Show a friendly banner that a shared audit was loaded
   const banner = document.getElementById('welcome-banner');
   banner.style.display = 'block';
   banner.innerHTML = `<div class="welcome-banner">
@@ -1440,7 +1437,6 @@ function applyURLParams(vals) {
 }
 
 // ── COMPARISON DATA (BLS 2024 + OECD) ────────────────────────────────
-// All values in hours per day, population averages including non-working days
 const BENCHMARKS = {
   us: {
     label: 'US average (BLS 2024)',
@@ -1493,19 +1489,19 @@ const BENCHMARKS = {
 };
 
 const COMPARE_LABELS = {
-  sleep: { label: 'Sleep', icon: '😴', higherMsg: 'more than', lowerMsg: 'less than' },
-  eating: { label: 'Eating', icon: '🍽️', higherMsg: 'more than', lowerMsg: 'less than' },
-  hygiene: { label: 'Hygiene', icon: '🚿', higherMsg: 'more than', lowerMsg: 'less than' },
-  work: { label: 'Work / Study', icon: '💼', higherMsg: 'more than', lowerMsg: 'less than' },
-  commute: { label: 'Commuting', icon: '🚗', higherMsg: 'more than', lowerMsg: 'less than' },
-  cooking: { label: 'Cooking', icon: '👨‍🍳', higherMsg: 'more than', lowerMsg: 'less than' },
-  chores: { label: 'Chores', icon: '🧹', higherMsg: 'more than', lowerMsg: 'less than' },
-  childcare: { label: 'Childcare', icon: '👶', higherMsg: 'more than', lowerMsg: 'less than' },
-  social: { label: 'Social Media', icon: '📱', higherMsg: 'more than', lowerMsg: 'less than' },
-  tv: { label: 'TV / Streaming', icon: '📺', higherMsg: 'more than', lowerMsg: 'less than' },
-  exercise: { label: 'Exercise', icon: '🏃', higherMsg: 'more than', lowerMsg: 'less than' },
-  reading: { label: 'Reading', icon: '📚', higherMsg: 'more than', lowerMsg: 'less than' },
-  hobbies: { label: 'Hobbies', icon: '🎨', higherMsg: 'more than', lowerMsg: 'less than' },
+  sleep: { label: 'Sleep', icon: '😴' },
+  eating: { label: 'Eating', icon: '🍽️' },
+  hygiene: { label: 'Hygiene', icon: '🚿' },
+  work: { label: 'Work / Study', icon: '💼' },
+  commute: { label: 'Commuting', icon: '🚗' },
+  cooking: { label: 'Cooking', icon: '👨‍🍳' },
+  chores: { label: 'Chores', icon: '🧹' },
+  childcare: { label: 'Childcare', icon: '👶' },
+  social: { label: 'Social Media', icon: '📱' },
+  tv: { label: 'TV / Streaming', icon: '📺' },
+  exercise: { label: 'Exercise', icon: '🏃' },
+  reading: { label: 'Reading', icon: '📚' },
+  hobbies: { label: 'Hobbies', icon: '🎨' },
 };
 
 function buildCompare() {
@@ -1515,7 +1511,7 @@ function buildCompare() {
   const el = document.getElementById('compare-rows');
   el.innerHTML = '';
 
-  const maxH = 12; // max hours for bar scaling
+  const maxH = 12;
 
   Object.keys(COMPARE_LABELS).forEach(id => {
     const meta = COMPARE_LABELS[id];
@@ -1556,11 +1552,15 @@ function buildCompare() {
   });
 }
 
-
+// ── SAVE + GA4 EVENT ──────────────────────────────────────────────────
 const _origShowResults = showResults;
 showResults = function() {
   _origShowResults();
   saveToStorage();
+  gtag('event', 'calculator_complete', {
+    'event_category': 'engagement',
+    'event_label': 'life_audit_submitted'
+  });
 };
 
 // ── INIT ──────────────────────────────────────────────────────────────
@@ -1570,7 +1570,6 @@ showResults = function() {
   if (urlVals && Object.keys(urlVals).length > 1) {
     applyVals(urlVals);
     applyURLParams(urlVals);
-    // Auto-show results for shared links
     setTimeout(() => {
       showResults();
       document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
@@ -1582,7 +1581,6 @@ showResults = function() {
   const saved = loadFromStorage();
   if (saved) {
     showWelcomeBanner(saved);
-    // Don't auto-apply — let user choose via banner
   }
 
   update();
