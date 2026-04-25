@@ -95,7 +95,7 @@
   /* HERO */
   .hero {
     background: var(--navy);
-    padding: 5rem 2rem 4rem;
+    padding: 5rem 2rem 5rem;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -105,8 +105,16 @@
     position: absolute;
     top: -60px; left: 50%;
     transform: translateX(-50%);
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(31,168,160,0.15) 0%, transparent 70%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(31,168,160,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(232,164,74,0.08) 0%, transparent 70%);
     pointer-events: none;
   }
   .hero-eyebrow {
@@ -115,40 +123,100 @@
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--teal-light);
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
   }
   .hero h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-size: clamp(2.2rem, 5.5vw, 3.8rem);
     color: var(--white);
     line-height: 1.1;
     margin-bottom: 1.25rem;
     letter-spacing: -0.02em;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
   }
   .hero h1 em { color: var(--teal-light); font-style: italic; }
   .hero-sub {
-    color: rgba(255,255,255,0.65);
-    font-size: 1.1rem;
-    max-width: 500px;
+    color: rgba(255,255,255,0.6);
+    font-size: 1.05rem;
+    max-width: 480px;
     margin: 0 auto 2.5rem;
-    line-height: 1.6;
+    line-height: 1.65;
     font-weight: 300;
   }
-  .hero-stat {
-    display: inline-block;
+
+  /* ROTATING STAT TICKER */
+  .stat-ticker-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .stat-ticker {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: var(--radius);
-    padding: 1.25rem 2rem;
-    margin-bottom: 2.5rem;
+    padding: 1.5rem 2.5rem;
+    min-width: 320px;
+    max-width: 440px;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .hero-stat strong {
+  .stat-ticker-item {
+    position: absolute;
+    width: 100%;
+    padding: 0 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+  .stat-ticker-item.active {
+    opacity: 1;
+    transform: translateY(0);
+    position: relative;
+    pointer-events: auto;
+  }
+  .stat-ticker-item .big {
     display: block;
     font-family: 'DM Serif Display', serif;
-    font-size: 2.4rem;
+    font-size: 2.6rem;
     color: var(--teal-light);
+    line-height: 1;
+    margin-bottom: 0.3rem;
   }
-  .hero-stat span { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+  .stat-ticker-item .label {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+  }
+  .ticker-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 0.75rem;
+  }
+  .ticker-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .ticker-dot.active { background: var(--teal-light); }
+
+  .cta-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
   .cta-btn {
     background: var(--teal);
     color: var(--white);
@@ -164,8 +232,56 @@
     align-items: center;
     gap: 0.5rem;
   }
-  .cta-btn:hover { background: var(--teal-light); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31,168,160,0.35); }
+  .cta-btn:hover { background: var(--teal-light); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31,168,160,0.4); }
   .cta-btn svg { width: 18px; height: 18px; }
+  .cta-trust {
+    font-size: 0.76rem;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.04em;
+  }
+
+  /* FEATURE PREVIEW STRIP */
+  .features-strip {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+  }
+  .features-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  @media(max-width: 640px) { .features-inner { grid-template-columns: 1fr; gap: 1.5rem; } }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--teal-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .feature-text strong {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.2rem;
+  }
+  .feature-text span {
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
 
   /* MAIN LAYOUT */
   main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
@@ -371,6 +487,11 @@
     transition: all 0.2s;
   }
   .submit-btn:hover { background: var(--navy-mid); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,31,61,0.2); }
+  .submit-trust {
+    font-size: 0.75rem;
+    color: var(--slate);
+    margin-top: 0.6rem;
+  }
 
   /* RESULTS */
   #results { display: none; }
@@ -387,6 +508,7 @@
     padding: 4px;
     border: 1px solid var(--border);
     width: fit-content;
+    flex-wrap: wrap;
   }
   .tab-btn {
     padding: 0.5rem 1.25rem;
@@ -727,6 +849,23 @@
   }
   .blog-card-link { font-size: 0.82rem; font-weight: 600; color: var(--teal); }
 
+  /* NEW badge */
+  .blog-card-new {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
   /* COMPARE TAB */
   .compare-row {
     display: grid;
@@ -757,6 +896,33 @@
   .compare-pct.same { color: var(--slate); }
   .compare-verdict-lbl { font-size: 0.7rem; color: var(--slate); }
   @media(max-width:520px) { .compare-row { grid-template-columns: 1fr; } .compare-verdict { text-align: left; } }
+
+  /* CURIOSITY HOOK */
+  .curiosity-hook {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .curiosity-hook-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+  .curiosity-hook-text strong {
+    display: block;
+    color: var(--white);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .curiosity-hook-text span {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -769,20 +935,77 @@
 <!-- WELCOME BACK BANNER (injected by JS if localStorage found) -->
 <div id="welcome-banner" style="display:none"></div>
 
+<!-- HERO -->
 <section class="hero" id="top">
-  <p class="hero-eyebrow">Time Allocation Calculator</p>
-  <h1>Time is the most valuable thing you have.<br><em>Where is it going?</em></h1>
-  <p class="hero-sub">Input your daily habits. See exactly how your hours, years, and decades are allocated — and what you could reclaim.</p>
-  <div class="hero-stat">
-    <strong id="hero-sleep-years">26.3 yrs</strong>
-    <span>The average person spends asleep in a lifetime</span>
+  <p class="hero-eyebrow">Free Life Time Allocation Calculator</p>
+  <h1>You have one life.<br><em>Most of it is already spoken for.</em></h1>
+  <p class="hero-sub">See exactly where your hours, years and decades are going — and what you can actually do about it.</p>
+
+  <!-- ROTATING STAT TICKER -->
+  <div class="stat-ticker-wrap">
+    <div>
+      <div class="stat-ticker">
+        <div class="stat-ticker-item active">
+          <span class="big">26 yrs</span>
+          <span class="label">The average person will spend asleep in their lifetime</span>
+        </div>
+        <div class="stat-ticker-item">
+          <span class="big">6.4 yrs</span>
+          <span class="label">The average person will spend on social media in their lifetime</span>
+        </div>
+        <div class="stat-ticker-item">
+          <span class="big">13 yrs</span>
+          <span class="label">The average person will spend working in their lifetime</span>
+        </div>
+        <div class="stat-ticker-item">
+          <span class="big">4.3 yrs</span>
+          <span class="label">The average person will spend watching TV in their lifetime</span>
+        </div>
+      </div>
+      <div class="ticker-dots">
+        <div class="ticker-dot active" onclick="goTicker(0)"></div>
+        <div class="ticker-dot" onclick="goTicker(1)"></div>
+        <div class="ticker-dot" onclick="goTicker(2)"></div>
+        <div class="ticker-dot" onclick="goTicker(3)"></div>
+      </div>
+    </div>
   </div>
-  <br>
-  <button class="cta-btn" onclick="document.getElementById('audit-form').scrollIntoView({behavior:'smooth'})">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-    Audit Your Life in 60 Seconds
-  </button>
+
+  <div class="cta-group">
+    <button class="cta-btn" onclick="document.getElementById('audit-form').scrollIntoView({behavior:'smooth'})">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      See Where My Life Goes
+    </button>
+    <span class="cta-trust">Free · No sign-up · All calculations stay on your device</span>
+  </div>
 </section>
+
+<!-- FEATURE PREVIEW STRIP -->
+<div class="features-strip">
+  <div class="features-inner">
+    <div class="feature-item">
+      <div class="feature-icon">📊</div>
+      <div class="feature-text">
+        <strong>Your Day, Visualised</strong>
+        <span>See your 24 hours as a beautiful breakdown — and whether the split matches your intentions.</span>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">⏳</div>
+      <div class="feature-text">
+        <strong>Your Lifetime at a Glance</strong>
+        <span>Convert daily habits into years. Most people find at least one number genuinely surprising.</span>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">💡</div>
+      <div class="feature-text">
+        <strong>What If You Changed One Thing?</strong>
+        <span>Drag a slider and watch the lifetime projection update. Small changes compound dramatically.</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- FORM -->
 <main>
@@ -904,6 +1127,7 @@
 
       <div class="submit-wrap">
         <button class="submit-btn" onclick="showResults()">Show Where My Life Goes →</button>
+        <p class="submit-trust">All calculations happen in your browser. Nothing is stored or shared.</p>
       </div>
     </div>
   </section>
@@ -1022,17 +1246,23 @@
     <h2 class="section-title">Go deeper</h2>
     <p class="section-sub">Explore the research and thinking behind how we spend our time.</p>
     <div class="blog-grid">
-      <a class="blog-card" href="/blog/how-to-do-a-personal-time-audit">
-        <div class="blog-card-tag">Time Management · 6 min read</div>
-        <h3>How to Do a Personal Time Audit (And Why It Might Surprise You)</h3>
-        <p>Most of us have a rough idea of how we spend our days. A time audit shows you the reality — and the gap is almost always eye-opening.</p>
-        <span class="blog-card-link">Read the guide →</span>
+      <a class="blog-card" href="/blog/how-much-of-your-life-do-you-spend-exercising">
+        <div class="blog-card-tag">Exercise · 6 min read <span class="blog-card-new">New</span></div>
+        <h3>How Much of Your Life Do You Spend Exercising? The Numbers Are Humbling</h3>
+        <p>The average person spends about 3 minutes a day exercising. That's less time than it takes to make a coffee. Here's the surprisingly good deal hiding in that number.</p>
+        <span class="blog-card-link">Read the article →</span>
       </a>
       <a class="blog-card" href="/blog/how-much-of-your-life-do-you-spend-sleeping">
         <div class="blog-card-tag">Sleep · 5 min read</div>
         <h3>How Much of Your Life Do You Spend Sleeping? The Real Numbers</h3>
         <p>The average person will spend around 26 years of their life asleep. Here's what that number really means — and why it's not something to feel bad about.</p>
         <span class="blog-card-link">Read the article →</span>
+      </a>
+      <a class="blog-card" href="/blog/how-to-do-a-personal-time-audit">
+        <div class="blog-card-tag">Time Management · 6 min read</div>
+        <h3>How to Do a Personal Time Audit (And Why It Might Surprise You)</h3>
+        <p>Most of us have a rough idea of how we spend our days. A time audit shows you the reality — and the gap is almost always eye-opening.</p>
+        <span class="blog-card-link">Read the guide →</span>
       </a>
       <a class="blog-card" href="/blog/how-many-years-do-you-spend-on-social-media">
         <div class="blog-card-tag">Social Media · 7 min read</div>
@@ -1103,6 +1333,23 @@ function fmtHM(h) {
 function fmtYears(h) {
   return (h / 8766).toFixed(1);
 }
+
+// ── TICKER ────────────────────────────────────────────────────────────
+let tickerIdx = 0;
+const tickerItems = document.querySelectorAll('.stat-ticker-item');
+const tickerDots = document.querySelectorAll('.ticker-dot');
+
+function goTicker(idx) {
+  tickerItems[tickerIdx].classList.remove('active');
+  tickerDots[tickerIdx].classList.remove('active');
+  tickerIdx = idx;
+  tickerItems[tickerIdx].classList.add('active');
+  tickerDots[tickerIdx].classList.add('active');
+}
+
+setInterval(() => {
+  goTicker((tickerIdx + 1) % tickerItems.length);
+}, 3500);
 
 // ── LIVE UPDATE ────────────────────────────────────────────────────────
 function update() {
