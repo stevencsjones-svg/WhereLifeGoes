@@ -923,6 +923,118 @@
     font-size: 0.82rem;
     line-height: 1.5;
   }
+
+  /* LIFE IN WEEKS GRID */
+  .grid-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .grid-view-toggle {
+    display: flex;
+    gap: 0.4rem;
+    background: var(--bg);
+    border-radius: 50px;
+    padding: 3px;
+    border: 1px solid var(--border);
+  }
+  .gv-btn {
+    padding: 0.35rem 0.9rem;
+    border-radius: 50px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .gv-btn.active { background: var(--navy); color: #fff; }
+  .grid-summary {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .grid-summary-item { text-align: center; }
+  .grid-summary-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--navy);
+    line-height: 1;
+  }
+  .grid-summary-lbl { font-size: 0.7rem; color: var(--slate); text-transform: uppercase; letter-spacing: 0.08em; }
+  .life-grid-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
+  .life-grid {
+    display: grid;
+    gap: 2px;
+    width: fit-content;
+    min-width: 100%;
+  }
+  .lgc {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+    flex-shrink: 0;
+  }
+  .lgc:hover { transform: scale(1.6); z-index: 5; position: relative; opacity: 0.85; }
+  .lgc.lived { background: var(--navy-mid); }
+  .lgc.current {
+    background: var(--teal);
+    box-shadow: 0 0 0 2px var(--teal-light);
+    animation: gridpulse 2s ease-in-out infinite;
+  }
+  @keyframes gridpulse {
+    0%, 100% { box-shadow: 0 0 0 1px var(--teal-light); }
+    50% { box-shadow: 0 0 0 3px rgba(46,196,186,0.4); }
+  }
+  .lgc.future {
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+  /* Month view — bigger cells */
+  .life-grid.months .lgc { width: 20px; height: 20px; border-radius: 3px; }
+  .grid-info-bar {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    min-height: 2.4rem;
+    line-height: 1.5;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+  }
+  .grid-info-bar strong { color: var(--navy); }
+  .grid-legend {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .grid-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-soft);
+  }
+  .grid-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -1141,6 +1253,7 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="showTab('day',this)">Your Day</button>
       <button class="tab-btn" onclick="showTab('lifetime',this)">Your Lifetime</button>
+      <button class="tab-btn" onclick="showTab('grid',this)">Life in Weeks</button>
       <button class="tab-btn" onclick="showTab('whatif',this)">What If?</button>
       <button class="tab-btn" onclick="showTab('compare',this)">How Do You Compare?</button>
     </div>
@@ -1172,6 +1285,42 @@
     <div id="tab-whatif" class="card" style="display:none">
       <p style="font-size:0.9rem;color:var(--text-soft);margin-bottom:1.5rem;line-height:1.5;">Drag a slider to see what you could reclaim. Small changes compound dramatically over a lifetime.</p>
       <div id="whatif-rows"></div>
+    </div>
+
+    <!-- TAB: GRID -->
+    <div id="tab-grid" class="card" style="display:none">
+      <div class="grid-controls">
+        <div>
+          <div class="grid-view-toggle">
+            <button class="gv-btn active" onclick="setGridView('weeks',this)">Weeks</button>
+            <button class="gv-btn" onclick="setGridView('months',this)">Months</button>
+          </div>
+        </div>
+        <div class="grid-summary">
+          <div class="grid-summary-item">
+            <div class="grid-summary-val" id="grid-lived">—</div>
+            <div class="grid-summary-lbl">weeks lived</div>
+          </div>
+          <div class="grid-summary-item">
+            <div class="grid-summary-val" id="grid-remaining">—</div>
+            <div class="grid-summary-lbl">weeks remaining</div>
+          </div>
+          <div class="grid-summary-item">
+            <div class="grid-summary-val" id="grid-pct">—</div>
+            <div class="grid-summary-lbl">of life elapsed</div>
+          </div>
+        </div>
+      </div>
+      <div class="life-grid-scroll">
+        <div id="life-grid" class="life-grid"></div>
+      </div>
+      <div class="grid-info-bar" id="grid-info-bar">Hover over any square to see what it contains.</div>
+      <div class="grid-legend">
+        <div class="grid-legend-item"><div class="grid-legend-dot" style="background:var(--navy-mid)"></div> Weeks already lived</div>
+        <div class="grid-legend-item"><div class="grid-legend-dot" style="background:var(--teal);box-shadow:0 0 0 2px var(--teal-light)"></div> Current week</div>
+        <div class="grid-legend-item"><div class="grid-legend-dot" style="background:transparent;border:1px solid var(--border)"></div> Weeks remaining</div>
+      </div>
+      <p style="font-size:0.72rem;color:var(--slate);margin-top:1rem;">Each row = 1 year of your life. Each square = 1 week. The teal square is the current week of your life.</p>
     </div>
 
     <!-- TAB: COMPARE -->
@@ -1519,10 +1668,99 @@ function updateWI(slider, hId, yId, remaining) {
 function showTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['day','lifetime','whatif','compare'].forEach(t => {
+  ['day','lifetime','whatif','compare','grid'].forEach(t => {
     document.getElementById('tab-' + t).style.display = (t === name) ? '' : 'none';
   });
   if (name === 'compare') buildCompare();
+  if (name === 'grid') buildLifeGrid();
+}
+
+// ── LIFE IN WEEKS GRID ────────────────────────────────────────────────
+let currentGridView = 'weeks';
+
+function setGridView(view, btn) {
+  currentGridView = view;
+  document.querySelectorAll('.gv-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildLifeGrid();
+}
+
+function buildLifeGrid() {
+  const vals = getVals();
+  const age = vals.age;
+  const expectancy = vals.expectancy;
+  const isWeeks = currentGridView === 'weeks';
+  const cols = isWeeks ? 52 : 12;
+  const unitsPerYear = isWeeks ? 52 : 12;
+  const unitName = isWeeks ? 'week' : 'month';
+
+  const totalUnits = Math.round(expectancy * unitsPerYear);
+  const livedUnits = Math.round(age * unitsPerYear);
+  const remaining = totalUnits - livedUnits;
+
+  // Update summary stats
+  document.getElementById('grid-lived').textContent = livedUnits.toLocaleString();
+  document.getElementById('grid-remaining').textContent = remaining.toLocaleString();
+  document.getElementById('grid-pct').textContent = Math.round(livedUnits / totalUnits * 100) + '%';
+
+  // Build grid
+  const grid = document.getElementById('life-grid');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${cols}, ${isWeeks ? '10px' : '20px'})`;
+  grid.className = 'life-grid' + (isWeeks ? '' : ' months');
+
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < totalUnits; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'lgc';
+
+    if (i < livedUnits - 1) {
+      cell.classList.add('lived');
+    } else if (i === livedUnits - 1) {
+      cell.classList.add('current');
+    } else {
+      cell.classList.add('future');
+    }
+
+    cell.dataset.i = i;
+    cell.dataset.year = Math.floor(i / unitsPerYear);
+    cell.dataset.lived = i < livedUnits ? '1' : '0';
+    cell.dataset.current = i === livedUnits - 1 ? '1' : '0';
+    fragment.appendChild(cell);
+  }
+
+  grid.appendChild(fragment);
+
+  // Single delegated hover listener
+  grid.onmouseover = (e) => {
+    const cell = e.target;
+    if (!cell.classList.contains('lgc')) return;
+    const i = parseInt(cell.dataset.i);
+    const year = parseInt(cell.dataset.year);
+    const unitNum = i + 1;
+    const infoEl = document.getElementById('grid-info-bar');
+
+    if (cell.dataset.current === '1') {
+      infoEl.innerHTML = `<strong>You are here.</strong> ${unitName.charAt(0).toUpperCase() + unitName.slice(1)} ${unitNum} of your life · Age ${year}. Make it count.`;
+    } else if (cell.dataset.lived === '1') {
+      infoEl.innerHTML = `<strong>${unitName.charAt(0).toUpperCase() + unitName.slice(1)} ${unitNum}</strong> · Age ~${year} · Already lived.`;
+    } else {
+      const hoursPerUnit = isWeeks ? 168 : 730;
+      const top3 = [...CATEGORIES]
+        .map(c => ({ label: c.label, icon: c.icon, h: Math.round(vals[c.id] * (isWeeks ? 7 : 30.44)) }))
+        .filter(x => x.h > 0)
+        .sort((a, b) => b.h - a.h)
+        .slice(0, 3)
+        .map(x => `${x.icon} ${x.h}h ${x.label.toLowerCase()}`)
+        .join(' &nbsp;·&nbsp; ');
+      infoEl.innerHTML = `<strong>${unitName.charAt(0).toUpperCase() + unitName.slice(1)} ${unitNum}</strong> · Age ~${year} &nbsp;·&nbsp; ${top3}`;
+    }
+  };
+
+  grid.onmouseleave = () => {
+    document.getElementById('grid-info-bar').textContent = 'Hover over any square to see what it contains.';
+  };
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────
