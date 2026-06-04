@@ -39,7 +39,7 @@
     --text-soft: #4a5e78; --border: #dce4ef;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-feature-settings: "kern" 1, "liga" 1; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   nav { background: var(--navy); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
   .logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: #fff; text-decoration: none; }
   .logo span { color: var(--teal-light); }

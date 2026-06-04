@@ -92,7 +92,7 @@
     --slate: #7a8aa0;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-feature-settings: "kern" 1, "liga" 1; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
   nav {
     background: var(--navy);
@@ -162,7 +162,16 @@
   article h3 { font-size: 1.05rem; font-weight: 600; color: var(--navy); margin: 1.75rem 0 0.5rem; }
   article p { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 1.25rem; }
   article p strong { color: var(--text); }
-  article a { color: var(--teal); }
+  article a {
+    color: var(--teal);
+    text-decoration: none;
+    background-image: linear-gradient(var(--teal), var(--teal));
+    background-size: 0% 1.5px;
+    background-repeat: no-repeat;
+    background-position: left 100%;
+    transition: background-size 0.25s ease;
+  }
+  article a:hover { background-size: 100% 1.5px; }
   article ul { padding-left: 1.5rem; margin-bottom: 1.25rem; }
   article li { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 0.4rem; }
   article li strong { color: var(--text); }
@@ -291,9 +300,9 @@
     </ul>
   </div>
 
-  <p>At some point, most of us do the rough maths. Eight hours a night, one third of the day, one third of your life. But what does that actually add up to?</p>
+  <p>You will spend somewhere between <strong>24 and 26 years</strong> of your life asleep. That's not a rounding error — it's more time than many people spend working across an entire career.</p>
 
-  <p>The answer, for the average person, is somewhere between <strong>24 and 26 years</strong>. That's not a rounding error — that's more time than many people spend working across an entire career.</p>
+  <p>Eight hours a night, one third of every day, one third of your life. The arithmetic is simple. It's the total that tends to stop people short.</p>
 
   <p>Which raises an obvious question: is that a problem? Should we be sleeping less, doing more? Or is there something worth reconsidering about how we think about those hours?</p>
 

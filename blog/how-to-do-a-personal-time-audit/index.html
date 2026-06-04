@@ -98,7 +98,7 @@
     --slate: #7a8aa0;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-feature-settings: "kern" 1, "liga" 1; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
   nav {
     background: var(--navy);
@@ -178,7 +178,16 @@
     margin-bottom: 1.25rem;
   }
   article p strong { color: var(--text); }
-  article a { color: var(--teal); }
+  article a {
+    color: var(--teal);
+    text-decoration: none;
+    background-image: linear-gradient(var(--teal), var(--teal));
+    background-size: 0% 1.5px;
+    background-repeat: no-repeat;
+    background-position: left 100%;
+    transition: background-size 0.25s ease;
+  }
+  article a:hover { background-size: 100% 1.5px; }
   article ul, article ol {
     padding-left: 1.5rem;
     margin-bottom: 1.25rem;
@@ -330,9 +339,9 @@
     </ul>
   </div>
 
-  <p>Here's a question worth sitting with for a moment: where did last week actually go?</p>
+  <p>You get 168 hours a week. You can probably account for maybe 60 of them with any confidence — work, sleep, the obvious blocks. The other hundred-odd are a blur.</p>
 
-  <p>Not where you <em>meant</em> it to go. Not the optimistic version you'd describe to a friend. Where did it actually go — hour by hour, across all seven days?</p>
+  <p>That blur is the problem. Not where you <em>meant</em> the time to go, or the optimistic version you'd describe to a friend — where it actually went, hour by hour, across all seven days.</p>
 
   <p>Most people can't answer that question with any real precision. And that's not a character flaw — it's just how human memory works. We remember the highlights and the frustrations, not the steady drip of hours that passed between them.</p>
 
@@ -411,7 +420,7 @@
 
   <p>A time audit is most useful when it leads to one or two specific, small changes — not a wholesale life overhaul. The research on behaviour change is clear: trying to change everything at once leads to changing nothing.</p>
 
-  <p>Look for your highest-leverage categories — the ones where you're spending more time than you'd consciously choose, and where a small reduction would free up meaningful hours. For most people, that's screen time (social media and TV) and commuting.</p>
+  <p>Look for the categories where the gap is widest — the ones where you're spending far more time than you'd consciously choose, and where trimming a little frees up real hours. For most people that's screen time, social media and TV, and commuting.</p>
 
   <p>Then pick one thing. Reduce it by 30 minutes a day. Track what you do with that time. And revisit your audit in 30 days.</p>
 

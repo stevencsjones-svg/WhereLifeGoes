@@ -97,7 +97,7 @@
     --slate: #7a8aa0;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-feature-settings: "kern" 1, "liga" 1; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
   nav {
     background: var(--navy);
@@ -167,7 +167,16 @@
   article h3 { font-size: 1.05rem; font-weight: 600; color: var(--navy); margin: 1.75rem 0 0.5rem; }
   article p { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 1.25rem; }
   article p strong { color: var(--text); }
-  article a { color: var(--teal); }
+  article a {
+    color: var(--teal);
+    text-decoration: none;
+    background-image: linear-gradient(var(--teal), var(--teal));
+    background-size: 0% 1.5px;
+    background-repeat: no-repeat;
+    background-position: left 100%;
+    transition: background-size 0.25s ease;
+  }
+  article a:hover { background-size: 100% 1.5px; }
   article ul { padding-left: 1.5rem; margin-bottom: 1.25rem; }
   article li { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 0.4rem; }
   article li strong { color: var(--text); }
@@ -296,7 +305,9 @@
     </ul>
   </div>
 
-  <p>Exercise is one of those things almost everyone intends to do more of. Tomorrow, or next week, or once things calm down at work, or definitely after the holidays. It's the permanent resident of every to-do list and the star of every New Year's resolution that quietly retires by February.</p>
+  <p>The average American spends about three minutes a day exercising. Not three minutes on the days they work out — three minutes averaged across every day of the year, gym sessions and couch marathons alike.</p>
+
+  <p>Exercise is the permanent resident of every to-do list and the star of every New Year's resolution that quietly retires by February. Almost everyone intends to do more of it: tomorrow, next week, once things calm down at work. The measured reality is three minutes.</p>
 
   <p>But when researchers actually measure how much time people spend exercising — not how much they <em>think</em> they exercise, or plan to exercise, but actually do — the numbers are a little confronting.</p>
 

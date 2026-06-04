@@ -97,7 +97,7 @@
     --slate: #7a8aa0;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-feature-settings: "kern" 1, "liga" 1; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
   nav {
     background: var(--navy);
@@ -167,7 +167,16 @@
   article h3 { font-size: 1.05rem; font-weight: 600; color: var(--navy); margin: 1.75rem 0 0.5rem; }
   article p { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 1.25rem; }
   article p strong { color: var(--text); }
-  article a { color: var(--teal); }
+  article a {
+    color: var(--teal);
+    text-decoration: none;
+    background-image: linear-gradient(var(--teal), var(--teal));
+    background-size: 0% 1.5px;
+    background-repeat: no-repeat;
+    background-position: left 100%;
+    transition: background-size 0.25s ease;
+  }
+  article a:hover { background-size: 100% 1.5px; }
   article ul { padding-left: 1.5rem; margin-bottom: 1.25rem; }
   article li { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 0.5rem; }
   article li strong { color: var(--text); }
@@ -422,7 +431,7 @@
   <div class="faq">
     <div class="faq-item">
       <div class="faq-q">Are hobbies good for your mental health?</div>
-      <div class="faq-a">Yes — and the evidence is unusually robust. A 2023 study in <em>Nature Medicine</em> tracked 93,263 people across 16 countries for up to 8 years. Those with hobbies consistently reported better health, more happiness, fewer depression symptoms, and higher life satisfaction. The findings held across every country studied, from Spain to Denmark to Japan.</div>
+      <div class="faq-a">Yes. A 2023 study in <em>Nature Medicine</em> tracked 93,263 people across 16 countries for up to eight years and found that those with hobbies reported better health, more happiness, fewer depression symptoms, and higher life satisfaction — in every country studied, from Spain to Denmark to Japan.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q">How much time should I spend on hobbies each week?</div>

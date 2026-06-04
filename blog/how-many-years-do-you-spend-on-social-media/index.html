@@ -86,7 +86,7 @@
     --text: #0f1f3d; --text-soft: #4a5e78; --border: #dce4ef; --slate: #7a8aa0;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-feature-settings: "kern" 1, "liga" 1; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   nav { background: var(--navy); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
   .logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: #fff; text-decoration: none; }
   .logo span { color: var(--teal-light); }
@@ -101,7 +101,17 @@
   h3 { font-size: 1.05rem; font-weight: 600; color: var(--navy); margin: 1.75rem 0 0.5rem; }
   p { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 1.25rem; }
   p strong { color: var(--text); }
-  a { color: var(--teal); }
+  a {
+    color: var(--teal);
+    text-decoration: none;
+    background-image: linear-gradient(var(--teal), var(--teal));
+    background-size: 0% 1.5px;
+    background-repeat: no-repeat;
+    background-position: left 100%;
+    transition: background-size 0.25s ease;
+  }
+  a:hover { background-size: 100% 1.5px; }
+  .logo, .nav-cta, .related-link, footer a { background-image: none; }
   ul { padding-left: 1.5rem; margin-bottom: 1.25rem; }
   li { color: var(--text-soft); line-height: 1.8; font-size: 1rem; margin-bottom: 0.4rem; }
   li strong { color: var(--text); }
@@ -171,7 +181,7 @@
     </ul>
   </div>
 
-  <p>Here's a number worth sitting with: the average person currently spends approximately <strong>2 hours and 21 minutes per day</strong> on social media, according to DataReportal's 2025 global research. That's down fractionally from 2024, but it's still a number that compounds in ways most people haven't stopped to calculate.</p>
+  <p><strong>2 hours and 21 minutes a day.</strong> That's what the average person now spends on social media, according to DataReportal's 2025 figures — down fractionally from 2024, and still a number that compounds in ways almost nobody stops to calculate.</p>
 
   <p>Multiply it out across a lifetime, and it becomes something else entirely.</p>
 
@@ -298,7 +308,7 @@
     <li>Florida, Utah, and Virginia have all passed or attempted legislation restricting social media access for under-16s.</li>
   </ul>
 
-  <p>The legal landscape around social media is shifting faster than at any point since these platforms launched. Whether that translates into meaningful changes to how the platforms are designed remains to be seen.</p>
+  <p>The law around social media is shifting faster than at any point since these platforms launched. Whether that turns into real changes to how the apps are built remains to be seen.</p>
 
   <h2>What this means for your time</h2>
 
