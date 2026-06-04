@@ -4,3 +4,6 @@
 !.dev.vars.example
 .env*
 !.env.example
+
+# Local Claude Code tooling (do not deploy)
+.claude/
