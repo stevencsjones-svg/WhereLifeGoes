@@ -93,6 +93,9 @@
 <meta name="twitter:image" content="https://wherelifegoes.com/og-image.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#0f1f3d">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1116,6 +1119,92 @@
   .gsg-item { display: flex; align-items: center; gap: 5px; font-size: 0.71rem; color: var(--slate); }
   .gsg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 </style>
+<style>
+  /* ── VIRAL FEATURES ───────────────────────────────────────────── */
+  .result-hook {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: #fff;
+    border-radius: 14px 14px 4px 14px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .result-hook .hook-text { flex: 1 1 320px; }
+  .result-hook em { color: var(--teal-light); font-style: italic; }
+  .hook-tweet {
+    flex-shrink: 0;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .hook-tweet:hover { background: var(--teal-light); transform: translateY(-2px); }
+  .live-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 0 0.25rem;
+  }
+  .live-toggle { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.82rem; color: var(--text-soft); cursor: pointer; user-select: none; }
+  .live-toggle input { width: 16px; height: 16px; accent-color: var(--teal); cursor: pointer; }
+  .live-readout { font-variant-numeric: tabular-nums; font-size: 0.9rem; color: var(--navy); font-weight: 600; min-height: 1.2em; }
+  .live-readout .lr-num { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: var(--teal); }
+  .live-readout .lr-faint { color: var(--slate); font-weight: 400; }
+  .share-name {
+    padding: 0.5rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+    outline: none;
+    max-width: 180px;
+    transition: border-color 0.15s;
+  }
+  .share-name:focus { border-color: var(--teal); }
+  .compare-sting {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 12px;
+    padding: 1.1rem 1.35rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .compare-sting strong { color: var(--teal-light); }
+  .email-capture {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .email-capture form { display: flex; gap: 0.5rem; flex: 1 1 280px; flex-wrap: wrap; margin: 0; }
+  .email-capture input[type=email] { flex: 1 1 180px; padding: 0.55rem 0.9rem; border: 1.5px solid var(--border); border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; outline: none; }
+  .email-capture input[type=email]:focus { border-color: var(--teal); }
+  .email-capture input[type=submit] { background: var(--navy); color: #fff; border: none; padding: 0.55rem 1.2rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+  .email-capture .ec-label { font-size: 0.85rem; color: var(--text-soft); flex-basis: 100%; }
+</style>
 </head>
 <body>
 
@@ -1315,6 +1404,16 @@
     <h2 class="section-title">Here's where your life goes</h2>
     <p class="section-sub">Based on your inputs and your country's life expectancy data.</p>
 
+    <!-- VIRAL: shareable sentence + live mortality clock -->
+    <div class="result-hook" id="result-hook"></div>
+    <div class="live-row">
+      <label class="live-toggle">
+        <input type="checkbox" id="live-mode" onchange="toggleLiveMode()">
+        <span>Live mode</span>
+      </label>
+      <span class="live-readout" id="live-readout" aria-live="polite"></span>
+    </div>
+
     <div class="tabs">
       <button class="tab-btn active" onclick="showTab('day',this)">Your Day</button>
       <button class="tab-btn" onclick="showTab('lifetime',this)">Your Lifetime</button>
@@ -1418,12 +1517,15 @@
 
     <!-- SHARE -->
     <div class="share-bar">
-      <span style="font-size:0.82rem;color:var(--slate);align-self:center;">Share your audit:</span>
-      <button class="screenshot-btn" onclick="captureScreenshot()">📸 Save Image</button>
-      <button class="share-btn" onclick="shareTwitter()">𝕏 Twitter / X</button>
+      <span style="font-size:0.82rem;color:var(--slate);align-self:center;">Share your result:</span>
+      <input id="share-name" class="share-name" type="text" maxlength="24" placeholder="Your name (optional)" oninput="onNameInput()" aria-label="Your name for the share card (optional)">
+      <button class="screenshot-btn" onclick="captureScreenshot()">📸 Save image</button>
+      <button class="share-btn" onclick="copyImage()">📋 Copy image</button>
+      <button class="share-btn" onclick="shareTwitter()">𝕏 Post to X</button>
       <button class="share-btn" onclick="shareLinkedIn()">in LinkedIn</button>
       <button class="share-btn" onclick="copyLink()">🔗 Copy link</button>
     </div>
+    <div class="email-capture" id="email-capture" style="display:none"></div>
 
     <!-- HIDDEN SHARE CARD (captured by html2canvas) -->
     <div style="position:fixed;left:-9999px;top:0;width:600px;">
@@ -1625,6 +1727,8 @@ function showResults() {
   buildDayChart(allCats, allVals);
   buildLifetime(allCats, allVals);
   buildWhatIf(vals);
+  buildHook(vals);
+  maybeShowEmailCapture();
 
   document.getElementById('results').classList.add('visible');
   setTimeout(() => document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' }), 100);
@@ -2000,9 +2104,7 @@ function buildShareURL() {
 
 function shareTwitter() {
   const vals = getVals();
-  const remaining = Math.max(vals.expectancy - vals.age, 0);
-  const sleepYrs = fmtYears(vals.sleep * 365.25 * remaining);
-  const text = encodeURIComponent(`I just checked Where Life Goes — I'll spend ${sleepYrs} years of my remaining life asleep. Where does YOUR life go? 👇`);
+  const text = encodeURIComponent(socialSentence(vals) + ' 👇');
   window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent('https://wherelifegoes.com')}`, '_blank');
 }
 
@@ -2027,10 +2129,11 @@ function buildShareCard() {
     if (h > bigH) { bigH = h; bigCat = c; }
   });
   const bigYrs = fmtYears(bigH);
+  const cardSubj = (function(){ const n = getName(); return n ? `${n} will` : `I'll`; })();
   document.getElementById('sc-headline').textContent =
-    `I'll spend ${bigYrs} years of my life on ${bigCat.label.toLowerCase()}.`;
+    `${cardSubj} spend ${bigYrs} years on ${bigCat.label.toLowerCase()}.`;
   document.getElementById('sc-sub').textContent =
-    `Full breakdown of my remaining ${remaining.toFixed(1)} years — generated at wherelifegoes.com`;
+    `Out of ${remaining.toFixed(1)} years left · wherelifegoes.com`;
 
   // Top 3 stats (excluding the biggest)
   const sorted = [...CATEGORIES]
@@ -2239,7 +2342,7 @@ function buildCompare() {
   const countryKey = document.getElementById('compare-country').value;
   const bench = BENCHMARKS[countryKey];
   const el = document.getElementById('compare-rows');
-  el.innerHTML = '';
+  el.innerHTML = buildCompareSting(vals, bench);
 
   const maxH = 12;
 
@@ -2280,6 +2383,141 @@ function buildCompare() {
       </div>
     </div>`;
   });
+}
+
+// ── VIRAL: name, social sentence, hook, live clock, copy-image, email ──
+const BUTTONDOWN_USER = ''; // ← set your Buttondown username (e.g. 'wherelifegoes') to switch on "Send me my results"
+
+function sanitizeName(raw) {
+  return (raw || '').replace(/[<>&"'`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24);
+}
+function getName() {
+  const el = document.getElementById('share-name');
+  return el ? sanitizeName(el.value) : '';
+}
+
+// Find the most dramatic, shareable contrast in the user's numbers
+function strikingPair(vals, remaining) {
+  const yrs = id => (vals[id] || 0) * 365.25 * remaining / 8766;
+  const pairs = [
+    { a:'social',  b:'exercise', tmpl:(x,y)=>`${x} years scrolling social media — and just ${y} exercising` },
+    { a:'tv',      b:'reading',  tmpl:(x,y)=>`${x} years in front of the TV — and just ${y} reading` },
+    { a:'commute', b:'hobbies',  tmpl:(x,y)=>`${x} years commuting — and just ${y} on the things they love` },
+    { a:'work',    b:'hobbies',  tmpl:(x,y)=>`${x} years working — and just ${y} on hobbies` },
+    { a:'social',  b:'exercise', tmpl:(x,y)=>`${x} years on social media — and just ${y} moving their body` },
+  ];
+  let best = null, bestGap = 0;
+  pairs.forEach(p => {
+    const x = yrs(p.a), y = yrs(p.b), gap = x - y;
+    if (x > 0.3 && gap > bestGap) { bestGap = gap; best = { p, x, y }; }
+  });
+  return best;
+}
+
+function r1(n) { return Math.round(n * 10) / 10; }
+
+function socialSentence(vals) {
+  const remaining = Math.max(vals.expectancy - vals.age, 0);
+  const best = strikingPair(vals, remaining);
+  if (best) {
+    return `I just found out I'll spend ${best.p.tmpl(r1(best.x), r1(best.y))}. Where does your life actually go?`;
+  }
+  const sleep = r1((vals.sleep || 0) * 365.25 * remaining / 8766);
+  return `I'll spend ${sleep} years of my remaining life asleep. Where does your life actually go?`;
+}
+
+function buildHook(vals) {
+  const remaining = Math.max(vals.expectancy - vals.age, 0);
+  const best = strikingPair(vals, remaining);
+  const name = getName();
+  const subj = name ? `${name}'ll` : `You'll`;
+  let text;
+  if (best) {
+    const tail = best.p.tmpl(r1(best.x), r1(best.y)).replace(/^[\d.]+ years /, '');
+    text = `${subj} spend <em>${r1(best.x)} years</em> ${tail}.`;
+  } else {
+    const sleep = r1((vals.sleep || 0) * 365.25 * remaining / 8766);
+    text = `${subj} spend <em>${sleep} years</em> of life asleep.`;
+  }
+  const el = document.getElementById('result-hook');
+  if (el) el.innerHTML = `<span class="hook-text">${text}</span><button class="hook-tweet" onclick="shareTwitter()">Post this on X →</button>`;
+}
+
+function onNameInput() { try { buildHook(getVals()); } catch (e) {} }
+
+// ── LIVE MORTALITY CLOCK ──────────────────────────────────────────────
+let _liveTimer = null, _liveEnd = 0;
+function toggleLiveMode() {
+  const cb = document.getElementById('live-mode');
+  const out = document.getElementById('live-readout');
+  if (_liveTimer) { clearInterval(_liveTimer); _liveTimer = null; }
+  if (!cb || !cb.checked) { if (out) out.innerHTML = ''; return; }
+  const vals = getVals();
+  const remaining = Math.max(vals.expectancy - vals.age, 0);
+  if (remaining <= 0) { out.innerHTML = '<span class="lr-faint">Every week from here is borrowed. Spend it well.</span>'; return; }
+  _liveEnd = Date.now() + remaining * 365.25 * 24 * 3600 * 1000;
+  const tick = () => {
+    const msLeft = Math.max(_liveEnd - Date.now(), 0);
+    const weeks = msLeft / (7 * 24 * 3600 * 1000);
+    out.innerHTML = `<span class="lr-num">${weeks.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })}</span> <span class="lr-faint">weeks left — ticking down in real time</span>`;
+  };
+  tick();
+  _liveTimer = setInterval(tick, 100);
+}
+
+// ── COPY CARD IMAGE TO CLIPBOARD ──────────────────────────────────────
+function copyImage() {
+  if (!navigator.clipboard || !window.ClipboardItem) {
+    showToast('Copy-image isn’t supported here — use Save image instead.');
+    return;
+  }
+  buildShareCard();
+  showToast('📋 Copying your card…', 3000);
+  html2canvas(document.getElementById('share-card'), { scale: 2, useCORS: true, backgroundColor: null, logging: false })
+    .then(canvas => canvas.toBlob(blob => {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        .then(() => showToast('✅ Card copied — paste it straight into a post.'))
+        .catch(() => showToast('❌ Copy failed — try Save image instead.'));
+    }, 'image/png'))
+    .catch(() => showToast('❌ Copy failed — try Save image instead.'));
+}
+
+// ── EMAIL CAPTURE (Buttondown, only if configured) ────────────────────
+function maybeShowEmailCapture() {
+  const box = document.getElementById('email-capture');
+  if (!box) return;
+  if (!BUTTONDOWN_USER) { box.style.display = 'none'; return; }
+  const u = encodeURIComponent(BUTTONDOWN_USER);
+  box.innerHTML = `<span class="ec-label">Want this card emailed to you? No spam — just your result and the occasional new feature.</span>
+    <form action="https://buttondown.email/api/emails/embed-subscribe/${u}" method="post" target="popupwindow" onsubmit="window.open('https://buttondown.email/${u}','popupwindow')">
+      <input type="email" name="email" placeholder="you@email.com" required>
+      <input type="submit" value="Send me my results">
+    </form>`;
+  box.style.display = 'flex';
+}
+
+// ── PWA: register service worker for installability + offline ──────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
+
+// ── COMPARISON STING ──────────────────────────────────────────────────
+function buildCompareSting(vals, bench) {
+  const remaining = Math.max(vals.expectancy - vals.age, 0);
+  let most = null, least = null;
+  Object.keys(COMPARE_LABELS).forEach(id => {
+    const you = vals[id] || 0, avg = bench[id] || 0;
+    const diffYrs = (you - avg) * 365.25 * remaining / 8766;
+    if (most === null || diffYrs > most.d) most = { id, d: diffYrs };
+    if (least === null || diffYrs < least.d) least = { id, d: diffYrs };
+  });
+  const country = bench.label.split('(')[0].trim();
+  const lbl = id => COMPARE_LABELS[id].label.toLowerCase();
+  const parts = [];
+  if (most && most.d > 0.05) parts.push(`<strong>${most.d.toFixed(1)} more years ${lbl(most.id)}</strong>`);
+  if (least && least.d < -0.05) parts.push(`<strong>${Math.abs(least.d).toFixed(1)} fewer years ${lbl(least.id)}</strong>`);
+  if (!parts.length) return '';
+  return `<div class="compare-sting">Compared to the ${country}, across your remaining ${remaining.toFixed(0)} years you'll spend ${parts.join(' and ')}.</div>`;
 }
 
 // ── SAVE + GA4 EVENT ──────────────────────────────────────────────────
