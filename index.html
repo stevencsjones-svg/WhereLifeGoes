@@ -1204,6 +1204,82 @@
   .email-capture input[type=email]:focus { border-color: var(--teal); }
   .email-capture input[type=submit] { background: var(--navy); color: #fff; border: none; padding: 0.55rem 1.2rem; border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
   .email-capture .ec-label { font-size: 0.85rem; color: var(--text-soft); flex-basis: 100%; }
+
+  /* ── INSIGHT LINE ─────────────────────────────────────────────── */
+  .insight-line {
+    margin-top: 1.25rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--slate);
+    font-style: italic;
+    animation: insightIn 0.6s ease both;
+  }
+  @keyframes insightIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── MODE TOGGLE (Standard | Trade-off) ───────────────────────── */
+  .mode-toggle {
+    display: inline-flex;
+    gap: 0.4rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+  .mode-btn {
+    padding: 0.45rem 1.15rem;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .mode-btn.active { background: var(--navy); color: #fff; }
+
+  /* ── TRADE-OFF VIEW ───────────────────────────────────────────── */
+  .trade-intro { font-size: 0.95rem; color: var(--text-soft); line-height: 1.55; margin-bottom: 1.25rem; max-width: 560px; }
+  .trade-anchor-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .trade-anchor-row label { font-size: 0.9rem; font-weight: 600; color: var(--navy); }
+  .trade-anchor-row select {
+    padding: 0.55rem 0.9rem;
+    border: 1.5px solid var(--teal);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--navy);
+    background: var(--white);
+    outline: none;
+    font-weight: 600;
+  }
+  .trade-headline {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 12px;
+    padding: 1.1rem 1.35rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+  .trade-headline strong { color: var(--teal-light); }
+  .trade-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .trade-row:last-child { border-bottom: none; }
+  .trade-cat { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; color: var(--text); }
+  .trade-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+  .trade-cost { text-align: right; flex-shrink: 0; font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: var(--navy); white-space: nowrap; }
+  .trade-cost span { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--slate); font-weight: 400; display: block; line-height: 1.2; }
 </style>
 </head>
 <body>
@@ -1453,6 +1529,23 @@
 
     <!-- TAB: GRID -->
     <div id="tab-grid" class="card" style="display:none">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-standard" onclick="setGridMode('standard')">Standard view</button>
+        <button class="mode-btn" id="mode-trade" onclick="setGridMode('trade')">Trade-off view</button>
+      </div>
+
+      <div id="trade-view" style="display:none">
+        <p class="trade-intro">Pick the one thing you'd protect at all costs. Everything else gets priced in <em>its</em> currency.</p>
+        <div class="trade-anchor-row">
+          <label for="trade-anchor">I'd protect my time for</label>
+          <select id="trade-anchor" onchange="buildTradeoff()"></select>
+        </div>
+        <div class="trade-headline" id="trade-headline"></div>
+        <div id="trade-rows"></div>
+        <p style="font-size:0.71rem;color:var(--slate);margin-top:1rem;">Time is one-for-one: an hour not spent here is an hour that could be spent there. Figures use your remaining years at your current habits.</p>
+      </div>
+
+      <div id="standard-view">
       <div class="grid-controls">
         <div>
           <div class="grid-view-toggle">
@@ -1489,6 +1582,8 @@
         <div class="gsg-item"><div class="gsg-dot" style="background:#8b7fc4;opacity:0.75"></div> Future — coloured by time allocation</div>
       </div>
       <p style="font-size:0.71rem;color:var(--slate);margin-top:0.75rem;">Each row = 1 year · Each square = 1 week · Colors show how your time is proportionally allocated across your remaining life</p>
+      <p class="insight-line" id="insight-line" style="display:none"></p>
+      </div>
     </div>
 
     <!-- TAB: COMPARE -->
@@ -1575,8 +1670,14 @@
     <h2 class="section-title">Go deeper</h2>
     <p class="section-sub">Explore the research and thinking behind how we spend our time.</p>
     <div class="blog-grid">
+      <a class="blog-card" href="/blog/how-much-of-your-life-is-left">
+        <div class="blog-card-tag">Time &amp; Mortality · 7 min read <span class="blog-card-new">New</span></div>
+        <h3>How Much of Your Life Is Already Gone? The Maths Most People Avoid</h3>
+        <p>The average life passes its halfway mark around age 37 — and only about 24 years of a whole life are genuinely free. Here's the arithmetic most people skip.</p>
+        <span class="blog-card-link">Read the article →</span>
+      </a>
       <a class="blog-card" href="/blog/how-much-of-your-life-do-you-spend-exercising">
-        <div class="blog-card-tag">Exercise · 6 min read <span class="blog-card-new">New</span></div>
+        <div class="blog-card-tag">Exercise · 6 min read</div>
         <h3>How Much of Your Life Do You Spend Exercising? The Numbers Are Humbling</h3>
         <p>The average person spends about 3 minutes a day exercising. That's less time than it takes to make a coffee. Here's the surprisingly good deal hiding in that number.</p>
         <span class="blog-card-link">Read the article →</span>
@@ -1983,6 +2084,8 @@ function buildLifeGrid() {
   grid.onmouseleave = () => {
     if (!activeHighlightCat) resetInfoBar();
   };
+
+  showInsight();
 }
 
 function buildCatLegend(vals, catMap, remaining, unitDays, unitsPerYear, unitLabel) {
@@ -2518,6 +2621,121 @@ function buildCompareSting(vals, bench) {
   if (least && least.d < -0.05) parts.push(`<strong>${Math.abs(least.d).toFixed(1)} fewer years ${lbl(least.id)}</strong>`);
   if (!parts.length) return '';
   return `<div class="compare-sting">Compared to the ${country}, across your remaining ${remaining.toFixed(0)} years you'll spend ${parts.join(' and ')}.</div>`;
+}
+
+// ── INSIGHT TRIGGERS — one quiet line of truth beneath the grid ───────
+function computeInsight(vals) {
+  const remaining = Math.max(vals.expectancy - vals.age, 0);
+  if (remaining <= 0) return '';
+  const y = id => (vals[id] || 0) * 365.25 * remaining / 8766; // lifetime years
+  const totalDaily = CATEGORIES.reduce((s, c) => s + (vals[c.id] || 0), 0);
+  const sleep = y('sleep'), work = y('work'), social = y('social'), tv = y('tv'),
+        exercise = y('exercise'), reading = y('reading'), hobbies = y('hobbies'),
+        commute = y('commute'), eating = y('eating'), cooking = y('cooking'),
+        hygiene = y('hygiene'), childcare = y('childcare');
+  const screens = social + tv;
+  const food = eating + cooking;
+  const free = Math.max((24 - totalDaily), 0) * 365.25 * remaining / 8766;
+  const conscious = ['work','social','tv','exercise','reading','hobbies','commute','eating','cooking','hygiene','childcare','chores'].map(y);
+  const biggestConscious = Math.max.apply(null, conscious);
+  const f1 = n => n.toFixed(1);
+  const ratio = (a, b) => Math.round(a / b);
+
+  const triggers = [
+    [childcare > 0 && work > childcare, `You'll spend ${f1(work)} years working and ${f1(childcare)} with the people you're raising.`],
+    [screens > work && work > 0.5, `You'll spend more of your life looking at screens than working.`],
+    [exercise > 0 && social > 5 * exercise, `For every year you'll spend exercising, you'll spend ${ratio(social, exercise)} on social media.`],
+    [hobbies > 0 && screens > 3 * hobbies, `You'll spend ${ratio(screens, hobbies)} times longer on screens than on the things you actually enjoy.`],
+    [reading > 0 && tv > 10 * reading, `Television will take ${ratio(tv, reading)} times the years you'll give to books.`],
+    [sleep > 2 * biggestConscious && biggestConscious > 0, `Sleep is the single largest investment you'll make with your life.`],
+    [free >= 0 && free < 5, `Less than five years of the life ahead of you is genuinely unscheduled.`],
+    [childcare > 0 && childcare > work, `You'll give more of your life to the people you love than to your job. Most people can't say that.`],
+    [reading > 0 && hygiene > reading, `You'll spend more of your remaining life grooming than reading.`],
+    [commute > 0 && exercise > 0 && commute > exercise, `You'll spend more of your life commuting than moving your body.`],
+    [food > social && social > 0.5, `You'll spend more of your life around food than on social media.`],
+    [social > 5, `More than five years of your remaining life will pass on social media.`],
+    [sleep > 20, `More than twenty years of the life you have left will be spent asleep.`],
+    [tv > 5, `Over five years of your remaining life will be spent watching things other people made.`],
+    [commute > 1.5, `You'll spend ${f1(commute)} years of your life simply getting to and from places.`],
+    [exercise > 0 && exercise < 0.5, `Under six months of your entire remaining life will be spent exercising.`],
+    [work > 10 && hobbies < 1, `You'll spend ${f1(work)} years working and under a year on the things you do for their own sake.`],
+    [screens > 10, `Across the years you have left, screens will quietly take ${f1(screens)} of them.`],
+    [free > 15, `You have more unscheduled time ahead than most people assume — around ${f1(free)} years of it.`],
+    [sleep > 0 && work > 0, `In the time you have left, you'll sleep for ${f1(sleep)} years and work for ${f1(work)}.`]
+  ];
+  for (const [cond, line] of triggers) { if (cond) return line; }
+  return '';
+}
+
+function showInsight() {
+  const el = document.getElementById('insight-line');
+  if (!el) return;
+  const line = computeInsight(getVals());
+  if (line) { el.textContent = line; el.style.display = 'block'; }
+  else { el.style.display = 'none'; }
+}
+
+// ── "WHAT DID I TRADE?" MODE ──────────────────────────────────────────
+function setGridMode(mode) {
+  const std = document.getElementById('standard-view');
+  const trade = document.getElementById('trade-view');
+  const bStd = document.getElementById('mode-standard');
+  const bTrade = document.getElementById('mode-trade');
+  if (mode === 'trade') {
+    std.style.display = 'none'; trade.style.display = 'block';
+    bStd.classList.remove('active'); bTrade.classList.add('active');
+    buildAnchorOptions();
+    buildTradeoff();
+  } else {
+    trade.style.display = 'none'; std.style.display = 'block';
+    bTrade.classList.remove('active'); bStd.classList.add('active');
+  }
+}
+
+function buildAnchorOptions() {
+  const sel = document.getElementById('trade-anchor');
+  if (sel.options.length) return;
+  CATEGORIES.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.label;
+    sel.appendChild(o);
+  });
+  sel.value = 'childcare'; // "time with family" as the default thing-to-protect
+}
+
+function buildTradeoff() {
+  const vals = getVals();
+  const remaining = Math.max(vals.expectancy - vals.age, 0);
+  const sel = document.getElementById('trade-anchor');
+  const anchorId = sel.value;
+  const anchor = CATEGORIES.find(c => c.id === anchorId) || CATEGORIES[0];
+  const anchorLbl = anchor.label.toLowerCase();
+  const yrs = id => (vals[id] || 0) * 365.25 * remaining / 8766;
+  const perHourYears = 365.25 * remaining / 8766; // 1h/day across remaining life, in years
+
+  // Headline: reclaim potential from the biggest discretionary category
+  const disc = ['social', 'tv', 'commute'].map(id => ({ id, v: yrs(id) }))
+    .filter(x => x.v > 0.1).sort((a, b) => b.v - a.v)[0];
+  let headline;
+  if (disc) {
+    const lbl = (CATEGORIES.find(c => c.id === disc.id).label).toLowerCase();
+    headline = `Cutting one hour a day of ${lbl} would return <strong>${perHourYears.toFixed(1)} years</strong> of ${anchorLbl} over the rest of your life.`;
+  } else {
+    headline = `Every hour a day you free up returns about <strong>${perHourYears.toFixed(1)} years</strong> of ${anchorLbl} across your remaining life.`;
+  }
+  document.getElementById('trade-headline').innerHTML = headline;
+
+  const rows = CATEGORIES.filter(c => c.id !== anchorId)
+    .map(c => ({ c, cost: yrs(c.id) }))
+    .filter(x => x.cost > 0.05)
+    .sort((a, b) => b.cost - a.cost);
+
+  const el = document.getElementById('trade-rows');
+  el.innerHTML = rows.map(({ c, cost }) => `
+    <div class="trade-row">
+      <div class="trade-cat"><span class="trade-dot" style="background:${c.color}"></span>${c.label}</div>
+      <div class="trade-cost">${cost.toFixed(1)}<span>years of ${anchorLbl}</span></div>
+    </div>`).join('') || `<p style="color:var(--slate);font-size:0.9rem;">Set some hours on the sliders to see what they cost.</p>`;
 }
 
 // ── SAVE + GA4 EVENT ──────────────────────────────────────────────────
