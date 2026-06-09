@@ -1280,6 +1280,22 @@
   .trade-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
   .trade-cost { text-align: right; flex-shrink: 0; font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: var(--navy); white-space: nowrap; }
   .trade-cost span { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--slate); font-weight: 400; display: block; line-height: 1.2; }
+
+  /* ── LIFE-IN-WEEKS POSTER ─────────────────────────────────────── */
+  .poster-btn {
+    margin-top: 1.25rem;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .poster-btn:hover { background: var(--teal-light); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31,168,160,0.35); }
 </style>
 </head>
 <body>
@@ -1583,6 +1599,7 @@
       </div>
       <p style="font-size:0.71rem;color:var(--slate);margin-top:0.75rem;">Each row = 1 year · Each square = 1 week · Colors show how your time is proportionally allocated across your remaining life</p>
       <p class="insight-line" id="insight-line" style="display:none"></p>
+      <div><button class="poster-btn" onclick="downloadPoster()">⬇ Download my Life in Weeks poster</button></div>
       </div>
     </div>
 
@@ -2736,6 +2753,141 @@ function buildTradeoff() {
       <div class="trade-cat"><span class="trade-dot" style="background:${c.color}"></span>${c.label}</div>
       <div class="trade-cost">${cost.toFixed(1)}<span>years of ${anchorLbl}</span></div>
     </div>`).join('') || `<p style="color:var(--slate);font-size:0.9rem;">Set some hours on the sliders to see what they cost.</p>`;
+}
+
+// ── LIFE-IN-WEEKS POSTER (raw canvas — phone-wallpaper / print quality) ──
+function _rr(ctx, x, y, w, h, r) {
+  if (r <= 0) { ctx.fillRect(x, y, w, h); return; }
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  ctx.fill();
+}
+function _spaced(ctx, text, x, y, sp) {
+  let cx = x;
+  for (const ch of text) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + sp; }
+}
+
+function downloadPoster() {
+  const vals = getVals();
+  const expectancy = vals.expectancy, age = vals.age;
+  const remaining = Math.max(expectancy - age, 0);
+  const cols = 52;
+  const totalUnits = Math.round(expectancy * 52);
+  const livedUnits = Math.round(age * 52);
+  const rows = Math.max(1, Math.ceil(totalUnits / cols));
+
+  // Weighted category pool — identical seeding to the on-screen grid
+  const totalH = CATEGORIES.reduce((s, c) => s + (vals[c.id] || 0), 0) || 1;
+  const pool = [];
+  CATEGORIES.forEach(c => {
+    const h = vals[c.id] || 0; if (h < 0.05) return;
+    const n = Math.max(1, Math.round((h / totalH) * 200));
+    for (let k = 0; k < n; k++) pool.push(c.id);
+  });
+  const rnd = seededRand(Math.round(age * 137 + expectancy * 41));
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+  const colorOf = {}; CATEGORIES.forEach(c => colorOf[c.id] = c.color);
+
+  showToast('🎨 Painting your life…', 4000);
+
+  const draw = () => {
+    const W = 1080, H = 1920, s = 2;
+    const cv = document.createElement('canvas');
+    cv.width = W * s; cv.height = H * s;
+    const ctx = cv.getContext('2d');
+    ctx.scale(s, s);
+
+    // Background + brand glows
+    ctx.fillStyle = '#0f1f3d'; ctx.fillRect(0, 0, W, H);
+    let g = ctx.createRadialGradient(W * 0.82, 150, 0, W * 0.82, 150, 760);
+    g.addColorStop(0, 'rgba(31,168,160,0.20)'); g.addColorStop(1, 'rgba(31,168,160,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    g = ctx.createRadialGradient(W * 0.12, H - 220, 0, W * 0.12, H - 220, 660);
+    g.addColorStop(0, 'rgba(232,164,74,0.08)'); g.addColorStop(1, 'rgba(232,164,74,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    const M = 70;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+    // Eyebrow
+    ctx.fillStyle = '#2ec4ba'; ctx.font = '600 22px "DM Sans", sans-serif';
+    _spaced(ctx, 'WHERE LIFE GOES', M, 110, 6);
+
+    // Title
+    const name = getName();
+    ctx.fillStyle = '#ffffff'; ctx.font = '64px "DM Serif Display", serif';
+    ctx.fillText(name ? `${name}'s life,` : 'My life,', M, 184);
+    ctx.fillStyle = '#2ec4ba'; ctx.font = 'italic 64px "DM Serif Display", serif';
+    ctx.fillText('in weeks', M, 252);
+
+    // Subtitle
+    ctx.fillStyle = 'rgba(255,255,255,0.62)'; ctx.font = '300 25px "DM Sans", sans-serif';
+    ctx.fillText(`${Math.round(age)} years lived  ·  ${remaining.toFixed(0)} years left  ·  each square is one week`, M, 300);
+
+    // Grid — fit within both width and a bounded height
+    const gap = 3;
+    const gyTop = 360, gridBottomMax = 1788;
+    const innerW = W - M * 2;
+    const cellW = Math.floor((innerW - (cols - 1) * gap) / cols);
+    const cellH = Math.floor(((gridBottomMax - gyTop) - (rows - 1) * gap) / rows);
+    const cell = Math.max(6, Math.min(cellW, cellH));
+    const gridW = cols * cell + (cols - 1) * gap;
+    const gx = (W - gridW) / 2;
+    const gy = gyTop;
+
+    for (let i = 0; i < totalUnits; i++) {
+      const r = Math.floor(i / cols), c = i % cols;
+      const x = gx + c * (cell + gap), y = gy + r * (cell + gap);
+      const lived = i < livedUnits - 1, current = i === livedUnits - 1;
+      let col;
+      if (lived) col = '#26406b';
+      else if (current) col = '#2ec4ba';
+      else { const id = pool.length ? pool[(i - livedUnits) % pool.length] : null; col = id ? colorOf[id] : '#1a3260'; }
+      ctx.globalAlpha = current ? 1 : (lived ? 1 : 0.82);
+      ctx.fillStyle = col;
+      _rr(ctx, x, y, cell, cell, Math.max(1, cell * 0.18));
+      if (current) {
+        ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(46,196,186,0.7)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(x + cell / 2, y + cell / 2, cell * 1.25, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Footer — legend + URL
+    const legY = 1806;
+    const leg = [['#26406b', 'Lived'], ['#2ec4ba', 'This week'], ['#8b7fc4', 'Still ahead']];
+    let lx = M;
+    ctx.font = '400 22px "DM Sans", sans-serif'; ctx.textBaseline = 'middle';
+    leg.forEach(([cc, lab]) => {
+      ctx.fillStyle = cc; _rr(ctx, lx, legY - 9, 18, 18, 4);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillText(lab, lx + 26, legY);
+      lx += 26 + ctx.measureText(lab).width + 38;
+    });
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#ffffff'; ctx.font = '700 30px "DM Sans", sans-serif';
+    ctx.fillText('wherelifegoes', M, H - 52);
+    const ww = ctx.measureText('wherelifegoes').width;
+    ctx.fillStyle = '#2ec4ba'; ctx.fillText('.com', M + ww, H - 52);
+    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '400 22px "DM Sans", sans-serif';
+    ctx.fillText('See yours — free', W - M, H - 52);
+
+    cv.toBlob(b => {
+      const a = document.createElement('a');
+      a.download = 'my-life-in-weeks.png';
+      a.href = URL.createObjectURL(b);
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      showToast('✅ Your poster is saved. Set it as your wallpaper.');
+    }, 'image/png');
+  };
+
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(draw).catch(draw); }
+  else { draw(); }
 }
 
 // ── SAVE + GA4 EVENT ──────────────────────────────────────────────────
