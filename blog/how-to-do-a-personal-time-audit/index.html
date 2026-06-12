@@ -344,6 +344,8 @@
     <strong style="color:#fff;">Do your own time audit.</strong> See exactly where your week — and your life — actually goes. Free, about 60 seconds. <a href="/" style="color:var(--teal-light);font-weight:700;white-space:nowrap;">Open the calculator →</a>
   </p>
 
+  <div id="ak-egg" style="display:none"></div>
+
   <p>You get 168 hours a week. You can probably account for maybe 60 of them with any confidence — work, sleep, the obvious blocks. The other hundred-odd are a blur.</p>
 
   <p>That blur is the problem. Not where you <em>meant</em> the time to go, or the optimistic version you'd describe to a friend — where it actually went, hour by hour, across all seven days.</p>
@@ -408,6 +410,95 @@
       </div>
     </div>
   </div>
+
+  <style>
+  .mini-audit { background: var(--navy); border-radius: 16px; padding: 1.75rem; margin: 2.5rem 0; color:#fff; }
+  .mini-audit .ma-eyebrow { font-size:0.7rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal-light); }
+  .mini-audit .ma-title { font-family:'DM Serif Display',serif; font-size:1.45rem; color:#fff; margin:0.35rem 0 0.3rem; }
+  .mini-audit .ma-sub { color:rgba(255,255,255,0.6); font-size:0.9rem; margin:0 0 1.25rem; line-height:1.5; }
+  .mini-audit .ma-agewrap { display:flex; align-items:center; gap:0.6rem; margin-bottom:1.1rem; font-size:0.9rem; color:rgba(255,255,255,0.8); }
+  .mini-audit .ma-agewrap input { width:72px; padding:0.4rem 0.6rem; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#fff; font-family:'DM Sans',sans-serif; font-size:0.95rem; }
+  .mini-audit .ma-slider { display:grid; grid-template-columns:120px 1fr 52px; align-items:center; gap:0.75rem; margin-bottom:0.85rem; }
+  .mini-audit .ma-slabel { display:flex; align-items:center; gap:0.45rem; font-size:0.88rem; color:rgba(255,255,255,0.9); }
+  .mini-audit .ma-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .mini-audit input[type=range] { width:100%; accent-color: var(--teal-light); cursor:pointer; }
+  .mini-audit .ma-val { font-size:0.85rem; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; color:#fff; }
+  .mini-audit .ma-bar { height:14px; border-radius:7px; overflow:hidden; display:flex; margin:1.25rem 0 0.5rem; background:rgba(255,255,255,0.08); }
+  .mini-audit .ma-bar span { height:100%; }
+  .mini-audit .ma-free { font-size:0.82rem; color:rgba(255,255,255,0.6); }
+  .mini-audit .ma-free strong { color:var(--teal-light); }
+  .mini-audit .ma-warn { color:#ffb4a8; font-size:0.82rem; margin-top:0.35rem; display:none; }
+  .mini-audit .ma-results-lead { font-size:0.9rem; color:rgba(255,255,255,0.75); margin:1.4rem 0 0.75rem; }
+  .mini-audit .ma-chips { display:flex; flex-wrap:wrap; gap:0.6rem; }
+  .mini-audit .ma-chip { background:rgba(255,255,255,0.07); border-radius:10px; padding:0.6rem 0.85rem; min-width:84px; }
+  .mini-audit .ma-chip b { display:block; font-family:'DM Serif Display',serif; font-size:1.4rem; color:var(--teal-light); line-height:1; }
+  .mini-audit .ma-chip span { font-size:0.72rem; color:rgba(255,255,255,0.6); }
+  .mini-audit .ma-cta { display:inline-block; margin-top:1.5rem; background:var(--teal); color:#fff; text-decoration:none; padding:0.8rem 1.4rem; border-radius:50px; font-weight:600; font-size:0.92rem; background-image:none; }
+  .mini-audit .ma-cta:hover { background:var(--teal-light); }
+  @media(max-width:520px){ .mini-audit .ma-slider{ grid-template-columns:96px 1fr 44px; } }
+  </style>
+
+  <div class="mini-audit" id="mini-audit">
+    <span class="ma-eyebrow">Try it here</span>
+    <h3 class="ma-title">A 30-second time audit</h3>
+    <p class="ma-sub">Set the four biggest blocks of your day. Whatever's left is your free time — and the years add up faster than you'd think.</p>
+
+    <div class="ma-agewrap"><label for="ma-age">I'm</label><input type="number" id="ma-age" min="1" max="100" value="32" oninput="maUpdate()"><span>years old</span></div>
+
+    <div class="ma-slider"><div class="ma-slabel"><span class="ma-dot" style="background:#4f7cff"></span>Sleep</div><input type="range" id="ma-sleep" min="0" max="14" step="0.5" value="8" oninput="maUpdate()"><span class="ma-val" id="ma-sleep-v">8h</span></div>
+    <div class="ma-slider"><div class="ma-slabel"><span class="ma-dot" style="background:#e8a44a"></span>Work / study</div><input type="range" id="ma-work" min="0" max="16" step="0.5" value="8" oninput="maUpdate()"><span class="ma-val" id="ma-work-v">8h</span></div>
+    <div class="ma-slider"><div class="ma-slabel"><span class="ma-dot" style="background:#f5c37a"></span>Commute</div><input type="range" id="ma-commute" min="0" max="5" step="0.25" value="1" oninput="maUpdate()"><span class="ma-val" id="ma-commute-v">1h</span></div>
+    <div class="ma-slider"><div class="ma-slabel"><span class="ma-dot" style="background:#e87060"></span>Phone &amp; screens</div><input type="range" id="ma-screens" min="0" max="12" step="0.5" value="3" oninput="maUpdate()"><span class="ma-val" id="ma-screens-v">3h</span></div>
+
+    <div class="ma-bar" id="ma-bar"></div>
+    <div class="ma-free">Free / unaccounted: <strong id="ma-free">3h</strong> a day</div>
+    <div class="ma-warn" id="ma-warn">That's more than 24 hours in a day — try trimming something.</div>
+
+    <p class="ma-results-lead">Keep that up and, across your remaining life, you'll spend roughly:</p>
+    <div class="ma-chips" id="ma-chips"></div>
+
+    <a class="ma-cta" id="ma-cta" href="/">See my full breakdown — every category, week by week →</a>
+  </div>
+
+  <script>
+  (function(){
+    var C = { sleep:'#4f7cff', work:'#e8a44a', commute:'#f5c37a', screens:'#e87060', free:'#c8d4e8' };
+    function val(id){ return parseFloat(document.getElementById(id).value) || 0; }
+    function fmtH(v){ return v + 'h'; }
+    window.maUpdate = function(){
+      var age = val('ma-age') || 32, sleep = val('ma-sleep'), work = val('ma-work'), commute = val('ma-commute'), screens = val('ma-screens');
+      document.getElementById('ma-sleep-v').textContent = fmtH(sleep);
+      document.getElementById('ma-work-v').textContent = fmtH(work);
+      document.getElementById('ma-commute-v').textContent = fmtH(commute);
+      document.getElementById('ma-screens-v').textContent = fmtH(screens);
+      var total = sleep + work + commute + screens;
+      var free = Math.max(24 - total, 0), over = total > 24;
+      document.getElementById('ma-free').textContent = fmtH(Math.round(free * 2) / 2);
+      document.getElementById('ma-warn').style.display = over ? 'block' : 'none';
+      function seg(h, c){ return '<span style="width:' + Math.min(h / 24 * 100, 100) + '%;background:' + c + '"></span>'; }
+      document.getElementById('ma-bar').innerHTML = seg(sleep, C.sleep) + seg(work, C.work) + seg(commute, C.commute) + seg(screens, C.screens) + (over ? '' : seg(free, C.free));
+      var remaining = Math.max(78.8 - age, 0);
+      function yrs(h){ return (h * 365.25 * remaining / 8766).toFixed(1); }
+      var chips = [['Sleep', sleep], ['Work', work], ['Screens', screens], ['Commute', commute]];
+      document.getElementById('ma-chips').innerHTML = chips.map(function(c){
+        return '<div class="ma-chip"><b>' + yrs(c[1]) + '</b><span>years ' + c[0].toLowerCase() + '</span></div>';
+      }).join('');
+      document.getElementById('ma-cta').setAttribute('href', '/?age=' + age + '&expectancy=78.8&sleep=' + sleep + '&work=' + work + '&commute=' + commute + '&social=' + (screens / 2) + '&tv=' + (screens / 2));
+    };
+    maUpdate();
+
+    // Auckland easter egg — timezone only, nothing stored
+    try {
+      if (Intl.DateTimeFormat().resolvedOptions().timeZone === 'Pacific/Auckland') {
+        var egg = document.getElementById('ak-egg');
+        if (egg) {
+          egg.innerHTML = '<div style="margin:0 0 2rem;padding:1rem 1.25rem;background:var(--teal-pale);border-left:4px solid var(--teal);border-radius:0 12px 12px 0;font-size:0.95rem;line-height:1.6;color:var(--navy);">👋 <strong>Kia ora, Auckland.</strong> You\'re in good company — a surprising number of the people reading this are too. Fitting, really: at roughly half an hour each way, the average Auckland commute quietly eats about <strong>a year of your life</strong> over a working career, before you\'ve audited anything else. <span style="display:block;margin-top:0.45rem;font-size:0.8rem;color:#7a8aa0;">(We guessed that from your device’s timezone. Nothing is stored.)</span></div>';
+          egg.style.display = 'block';
+        }
+      }
+    } catch (e) {}
+  })();
+  </script>
 
   <h2>The lifetime projection changes everything</h2>
 
