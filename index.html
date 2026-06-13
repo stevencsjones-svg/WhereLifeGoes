@@ -1751,7 +1751,7 @@
 
 <footer>
   <p style="max-width:520px;margin:0 auto 0.9rem;color:rgba(255,255,255,0.6);">Where Life Goes started as a spreadsheet for working out how many summers I had left. It got a little out of hand.</p>
-  <p>© 2026 Where Life Goes · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Use</a> · <a href="/affiliate-disclosure">Affiliate Disclosure</a></p>
+  <p>© 2026 Where Life Goes · <a href="/blog">Blog</a> · <a href="/days-alive">Days alive</a> · <a href="/about">About</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Use</a> · <a href="/affiliate-disclosure">Affiliate Disclosure</a></p>
   <p style="margin-top:0.4rem;">Some links on this site are affiliate links. We may earn a small commission at no cost to you.</p>
   <p style="margin-top:0.4rem;">Life expectancy data: WHO Global Health Observatory · OECD Time Use Survey</p>
 </footer>
@@ -1850,28 +1850,49 @@ function update() {
     warn.classList.remove('show');
     misc.textContent = fmtHM(24 - total);
   }
+
+  if (document.getElementById('results').classList.contains('visible')) liveRefresh();
 }
 
 // ── SHOW RESULTS ──────────────────────────────────────────────────────
-function showResults() {
+const MISC_CAT = { id:'misc', label:'Free / Unaccounted', color:'#c8d4e8', icon:'✨', compare: h=>'Time that is truly yours' };
+
+function renderResults(opts) {
+  opts = opts || {};
   const vals = getVals();
   let total = 0;
   CATEGORIES.forEach(c => total += vals[c.id]);
-  if (total > 24.05) { alert('Please adjust your sliders — total exceeds 24 hours.'); return; }
-
-  // Misc
-  const misc = 24 - total;
-  const allCats = [...CATEGORIES, { id:'misc', label:'Free / Unaccounted', color:'#c8d4e8', icon:'✨', compare: h=>'Time that is truly yours' }];
+  const misc = Math.max(24 - total, 0);
   const allVals = { ...vals, misc };
 
-  buildDayChart(allCats, allVals);
-  buildLifetime(allCats, allVals);
+  buildDayChart([...CATEGORIES, MISC_CAT], allVals);
+  buildLifetime([...CATEGORIES, MISC_CAT], allVals);
   buildWhatIf(vals);
   buildHook(vals);
   maybeShowEmailCapture();
 
   document.getElementById('results').classList.add('visible');
-  setTimeout(() => document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  if (opts.scroll) setTimeout(() => document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  if (opts.track) {
+    saveToStorage();
+    gtag('event', 'calculator_complete', { 'event_category': 'engagement', 'event_label': 'life_audit_submitted' });
+  }
+}
+
+// Lightweight live refresh while sliders move — no whatif rebuild, no scroll, no tracking
+function liveRefresh() {
+  const vals = getVals();
+  let total = 0;
+  CATEGORIES.forEach(c => total += vals[c.id]);
+  const allVals = { ...vals, misc: Math.max(24 - total, 0) };
+  buildDayChart([...CATEGORIES, MISC_CAT], allVals);
+  buildLifetime([...CATEGORIES, MISC_CAT], allVals);
+  buildHook(vals);
+}
+
+// The hero/submit button: render, scroll to results, count it as a completion
+function showResults() {
+  renderResults({ scroll: true, track: true });
 }
 
 // ── DAY CHART ─────────────────────────────────────────────────────────
@@ -1894,8 +1915,14 @@ function buildDayChart(cats, vals) {
     </li>`;
   });
 
+  if (dayChart) {
+    dayChart.data.labels = labels;
+    dayChart.data.datasets[0].data = data;
+    dayChart.data.datasets[0].backgroundColor = colors;
+    dayChart.update('none');
+    return;
+  }
   const ctx = document.getElementById('dayChart').getContext('2d');
-  if (dayChart) dayChart.destroy();
   dayChart = new Chart(ctx, {
     type: 'doughnut',
     data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
@@ -2912,38 +2939,40 @@ function downloadPoster() {
   else { draw(); }
 }
 
-// ── SAVE + GA4 EVENT ──────────────────────────────────────────────────
-const _origShowResults = showResults;
-showResults = function() {
-  _origShowResults();
-  saveToStorage();
-  gtag('event', 'calculator_complete', {
-    'event_category': 'engagement',
-    'event_label': 'life_audit_submitted'
+// ── ENGAGEMENT EVENT — fire once when the visitor first adjusts anything ──
+(function () {
+  const form = document.getElementById('audit-form');
+  if (!form) return;
+  let fired = false;
+  form.addEventListener('input', function () {
+    if (fired) return;
+    fired = true;
+    try { gtag('event', 'calculator_engaged', { 'event_category': 'engagement', 'event_label': 'slider_adjusted' }); } catch (e) {}
   });
-};
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 (function init() {
-  // 1. Check URL params first (shared link takes priority)
+  update(); // set slider labels + total bar immediately (no Chart needed)
+
   const urlVals = readURLParams();
-  if (urlVals && Object.keys(urlVals).length > 1) {
+  const shared = urlVals && Object.keys(urlVals).length > 1;
+  if (shared) {
     applyVals(urlVals);
     applyURLParams(urlVals);
-    setTimeout(() => {
-      showResults();
-      document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
-    }, 300);
-    return;
+  } else {
+    const saved = loadFromStorage();
+    if (saved) applyVals(saved); // returning visitor lands straight on their last audit
   }
 
-  // 2. Check localStorage for returning user
-  const saved = loadFromStorage();
-  if (saved) {
-    showWelcomeBanner(saved);
-  }
-
-  update();
+  // Reveal a live result as soon as the deferred Chart.js library is ready.
+  // No "Show results" gate, and auto-loads are NOT counted as completions.
+  const reveal = function () {
+    if (typeof Chart === 'undefined') { setTimeout(reveal, 50); return; }
+    renderResults({ scroll: shared, track: false });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal);
+  else reveal();
 })();
 </script>
 </body>
